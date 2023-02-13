@@ -1,0 +1,21 @@
+# needed for setting paramld in prepare_data.sh
+# run as:
+# grib_filter -o outfile.grib2 rule.filter infile.grib2
+
+print "processing [shortName] [paramId]";
+switch (shortName) {
+  case 'u' :
+     set paramId=165;
+  case 'v' :
+     set paramId=166;
+  case 'swh' :
+     set paramId=140229;
+  case 'dirpw' :
+     set paramId=140230;
+  case 'perpw' :
+     set paramId=140231;
+  default:
+     print "unexpected shortName";
+}
+
+write;
