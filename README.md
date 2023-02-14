@@ -2,7 +2,7 @@
 Prepare the GFS-Wave grib2 files for JCOMM validation project.
 
 Process starts on WCOSS2:
-scripts/run_jcomm.sh (runs on the cron)
+run_jcomm.sh (runs on the cron)
 
 The WCOSS2 part gathers the GFS-Wave data and sends it to the workstation, and submits
 Workstation/scripts/batch_prepare_gfswave.sh
