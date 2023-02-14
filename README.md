@@ -2,11 +2,10 @@
 Prepare the GFS-Wave grib2 files for JCOMM validation project.
 
 Process starts on WCOSS2:
-/lfs/h2/emc/vpppg/noscrub/deanna.spindler/VPPPG/EMC_waves-prod-gen/JCOMM/scripts
-run_jcomm.sh (runs on the cron)
+scripts/run_jcomm.sh (runs on the cron)
 
 The WCOSS2 part gathers the GFS-Wave data and sends it to the workstation, and submits
-/export/emc-lw-dspindle/dspindler/JCOMM2/scripts/batch_prepare_gfswave.sh
+Workstation/scripts/batch_prepare_gfswave.sh
 
 Process puts daily GFS-Wave grib2 files in emcrzdm: /home/ftp/polar/waves/JCOMM
 
