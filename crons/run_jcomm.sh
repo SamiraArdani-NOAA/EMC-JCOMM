@@ -7,9 +7,8 @@
 # 13 June 2022                                   
 #------------------------------------------------
 
-NEWHOME=/lfs/h2/emc/vpppg/noscrub/deanna.spindler
-SRCDIR=${NEWHOME}/VPPPG/EMC_waves-prod-gen/JCOMM/scripts
-WORKDIR=/lfs/h2/emc/ptmp/deanna.spindler/JCOMM
+SRCDIR=/path/to/JCOMM/scripts
+WORKDIR=/path/to/workdir
 cd ${WORKDIR}
 
 job1=$(qsub ${SRCDIR}/jcomm_00.pbs)

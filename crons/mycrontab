@@ -1,0 +1,8 @@
+SHELL=/bin/bash -l
+
+NEWHOME='/path/to/cron'
+
+# JCOMM task
+#0 12 * * * ${NEWHOME}/scripts/run_jcomm.sh $when 1>$NEWHOME/logs/gfswave_jcomm.log 2>&1
+
+# end of mycrontab
