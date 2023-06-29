@@ -15,9 +15,10 @@ conda activate work
 # prepare the files for push to polar       
 #                                           
 
-srcdir='/export/emc-lw-dspindle/dspindler/JCOMM2/scripts'
-fixdir='/export/emc-lw-dspindle/dspindler/JCOMM2/fix'
-workdir='/export/emc-lw-dspindle/dspindler/JCOMM2/workdir'
+
+srcdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/EMC_waves-prod-gen/JCOMM/scripts'
+fixdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/EMC_waves-prod-gen/JCOMM/fix'
+workdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/JCOMM-test'
 USERpolar='waves@emcrzdm.ncep.noaa.gov'
 polardir='/home/ftp/polar/waves/JCOMM'
 

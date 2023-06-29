@@ -13,9 +13,9 @@ function checkpoint {
 # prepare the files for wcoss push to polar 
 #                                           
 
-srcdir='/gpfs/dell2/emc/verification/noscrub/Deanna.Spindler/VPPPG/EMC_waves-prod-gen/JCOMM/scripts'
-fixdir='/gpfs/dell2/emc/verification/noscrub/Deanna.Spindler/VPPPG/EMC_waves-prod-gen/JCOMM/fix'
-workdir='/gpfs/dell2/ptmp/Deanna.Spindler/JCOMM-test'
+srcdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/EMC_waves-prod-gen/JCOMM/scripts'
+fixdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/EMC_waves-prod-gen/JCOMM/fix'
+workdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/JCOMM-test'
 USERpolar='waves@emcrzdm.ncep.noaa.gov'
 polardir='/home/ftp/polar/waves/JCOMM-test'
 #on Mars and Venus:
@@ -28,7 +28,7 @@ SCP=/usr/bin/scp
 . /usrx/local/prod/lmod/lmod/init/profile
 module purge
 module load EnvVars/1.0.3 ips/18.0.1.163   # needed to get grib_util to load
-module load grib_util/1.1.1                # for $WGRIB2
+module load grib_util/1.2.4                # for $WGRIB2
 module use -a /gpfs/dell1/usrx/local/nceplibs/dev/modulefiles
 module load eccodes/2.17.0
 
@@ -275,7 +275,7 @@ if [ $runcron -eq 1 ]; then
     cat all_range.txt >> jcomm_checks.log
     
     # email the jcomm_check.log file
-    cat jcomm_checks.log | mail -s "JCOMM checks" Deanna.Spindler@noaa.gov
+    cat jcomm_checks.log | mail -s "JCOMM checks" Samira.Ardani@noaa.gov
   fi
   
   if [[ "${clean_up}" = 'yes' ]]

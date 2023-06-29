@@ -15,9 +15,9 @@ function checkpoint {
 
 set -x
 
-NEWHOME="/lfs/h2/emc/vpppg/noscrub/$USER"
-srcdir="$NEWHOME/VPPPG/EMC_waves-prod-gen/JCOMM/scripts"
-fixdir="$NEWHOME/VPPPG/EMC_waves-prod-gen/JCOMM/fix"
+NEWHOME="/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/$USER"
+srcdir="$NEWHOME/EMC_waves-prod-gen/JCOMM/scripts"
+fixdir="$NEWHOME/EMC_waves-prod-gen/JCOMM/fix"
 workdir="/lfs/h2/emc/ptmp/$USER/JCOMM"
 datadir='/lfs/h1/ops/prod/com/gfs/v16.3'  ## GFS-Wave prod
 #datadir='/lfs/h2/emc/vpppg/noscrub/deanna.spindler/GFS_grib/archive'

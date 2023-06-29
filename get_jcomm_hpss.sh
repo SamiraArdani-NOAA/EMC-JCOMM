@@ -7,8 +7,8 @@
 # get any missing GFS-Wave files from HPSS
 # and put them on /lfs/h2/emc/vpppg/noscrub/deanna.spindler/GFS_grib/archive
 
-NEWHOME='/lfs/h2/emc/vpppg/noscrub/deanna.spindler'
-workdir='/lfs/h2/emc/vpppg/noscrub/deanna.spindler/GFS_grib/archive'
+NEWHOME='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/'
+workdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/GFS_grib/archive'
 hpsstar=$NEWHOME/bin/hpsstar
 
 theDate=$1
