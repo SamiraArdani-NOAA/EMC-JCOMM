@@ -1,4 +1,4 @@
-#!/bin/ksh -l
+#!/bin/bash
 
 # checkpoint function  usage:  checkpoint $? Name
 function checkpoint {
@@ -9,50 +9,77 @@ function checkpoint {
   fi
 }
 
+#conda activate hera-work
 #                                           
 # prepare the files for wcoss push to polar 
 #                                           
 
-srcdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/EMC_waves-prod-gen/JCOMM/scripts'
-fixdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/EMC_waves-prod-gen/JCOMM/fix'
-workdir='/scratch1/NCEPDEV/stmp2/Samira.Ardani/github/EMC-JCOMM/JCOMM-test'
+srcdir='/scratch2/NCEPDEV/ovp/Samira.Ardani/JCOMM/scripts'
+fixdir='/scratch2/NCEPDEV/ovp/Samira.Ardani/JCOMM/fix'
+workdir='/scratch2/NCEPDEV/stmp1/Samira.Ardani/JCOMM/'
+hpsstar='/scratch2/NCEPDEV/ovp/Samira.Ardani/JCOMM/bin/hpsstar'
 USERpolar='waves@emcrzdm.ncep.noaa.gov'
 polardir='/home/ftp/polar/waves/JCOMM-test'
 #on Mars and Venus:
-datadir='/gpfs/dell1/nco/ops/com/wave/prod'
+# A sample data:
+#/NCEPPROD/hpssprod/runhistory/rh2023/202305/20230512/com_gfs_v16.3_gfs.20230512_00.gfswave_output.tar.idx
+#datadir='/gpfs/dell1/nco/ops/com/wave/prod'
 
 SSH=/usr/bin/ssh
 SCP=/usr/bin/scp
 #CDODIR=/gpfs/dell2/emc/verification/noscrub/Todd.Spindler/CDO/bin
 
-. /usrx/local/prod/lmod/lmod/init/profile
+#. /usrx/local/prod/lmod/lmod/init/profile
 module purge
-module load EnvVars/1.0.3 ips/18.0.1.163   # needed to get grib_util to load
-module load grib_util/1.2.4                # for $WGRIB2
-module use -a /gpfs/dell1/usrx/local/nceplibs/dev/modulefiles
-module load eccodes/2.17.0
+module load hpss
+module load intel/17.0.5.239
+module load wgrib2/2.0.8
+
+grib_filter=/scratch2/NCEPDEV/ovp/Samira.Ardani/Samira_apps/miniconda3/envs/hera-work/bin/grib_filter
+grib_set=/scratch2/NCEPDEV/ovp/Samira.Ardani/Samira_apps/miniconda3/envs/hera-work/bin/grib_set
+grib_count=/scratch2/NCEPDEV/ovp/Samira.Ardani/Samira_apps/miniconda3/envs/hera-work/bin/grib_count
+grib_ls=/scratch2/NCEPDEV/ovp/Samira.Ardani/Samira_apps/miniconda3/envs/hera-work/bin/grib_ls
+md5sum=/bin/md5sum
+#module load EnvVars/1.0.3 ips/18.0.1.163   # needed to get grib_util to load
+#module load grib_util/1.2.4                # for $WGRIB2
+#module use -a /gpfs/dell1/usrx/local/nceplibs/dev/modulefiles
+#module load eccodes/2.17.0
+
+#module load intel/2022.3.0
+#module load gnu/9.2.0
+#module load wgrib2/3.1.1_wmo
+#module load grib_api/1.26.1
+#module load eccodes/2.8.2
+
 
 TODAY=$(date +'%Y%m%d')
-theDate=${1:-$TODAY}   ## use a passed-in date if given, else use TODAY
-echo $theDate
-echo "Running on ${SITE}"
-typeset -u DEV=$(cat /etc/dev)
-echo "DEV is $DEV"
+#theDate=${1:-$TODAY}   ## use a passed-in date if given, else use TODAY
+theDate=$1
+#cycles={$2:-'00 06 12 18'}
+#echo $theDate
+#endDate=${2:-$theDate}
+#yy=`date --date=theDate "+%Y%m"`
+#yymm=`date --date=theDate "+%Y%m"`
 
-typeset -u DEV=$(cat /etc/dev)
-if [ $SITE == $DEV ]; then
-  runcron=1
-  echo "DEV is $DEV, and running on $SITE"
-else
-  runcron=0
-  echo "DEV is $DEV, cannot run on $SITE"
-  exit
-fi
+# These upcoming line are used in WCOSS2:
+#echo "Running on ${SITE}"
+#typeset -u DEV=$(cat /etc/dev)
+#echo "DEV is $DEV"
 
-if [ $runcron -eq 1 ]; then
+#typeset -u DEV=$(cat /etc/dev)
+#if [ $SITE == $DEV ]; then
+#  runcron=1
+#  echo "DEV is $DEV, and running on $SITE"
+#else
+#  runcron=0
+#  echo "DEV is $DEV, cannot run on $SITE"
+#  exit
+#fi
+
+#if [ $runcron -eq 1 ]; then
   
   mkdir -p ${workdir}/${theDate}
-  cp ${srcdir}/fix_pwper.py ${workdir}/${theDate}/fix_pwper.py
+  cp ${srcdir}/fix_ranges.py ${workdir}/${theDate}/fix_ranges.py
   cp ${fixdir}/jcomm.rule.filter ${workdir}/${theDate}/rule.filter
   cp ${fixdir}/jcomm.paramIDs.txt ${workdir}/${theDate}/paramIDs.txt
     
@@ -79,72 +106,133 @@ if [ $runcron -eq 1 ]; then
     rm -f ${workdir}/${theDate}/wave*.grib2*
   fi
   
-  for cyc in ${cycles}
-    do
-	if [[ "${copy_files}" = 'yes' ]]
-    then
+#  for cyc in ${cycles}
+#    do
+#	if [[ "${copy_files}" = 'yes' ]]
+#    then
       # check if the data is there, prod is kept for 12 days
-	  if [[ -a ${datadir}/multi_1.${theDate} ]]; then
-        cp ${datadir}/multi_1.${theDate}/multi_1.glo_30m.t${cyc}z.*.grib2 ${workdir}/${theDate}/.
-      else
-        ${srcdir}/get_hpss_archive.sh ${theDate} ${cyc}
-      fi
-      checkpoint $? CP_data >> jcomm_checks.log
-    fi # copy file
+#	  if [[ -a ${datadir}/multi_1.${theDate} ]]; then
+#        cp ${datadir}/multi_1.${theDate}/multi_1.glo_30m.t${cyc}z.*.grib2 ${workdir}/${theDate}/.
+#      else
+#        ${srcdir}/get_hpss_archive.sh ${theDate} ${cyc}
+#      fi
+#      checkpoint $? CP_data >> jcomm_checks.log
+#    fi # copy file
 
+# Added to extract data from HPSS:
+#theDate=$1
+cycles='00'
+
+echo "running get_hpss_archive for ${theDate}"
+yy=`date --date=$theDate "+%Y"`
+yymm=`date --date=$theDate "+%Y%m"`
+hpssdir=/NCEPPROD/hpssprod/runhistory/rh${yy}/${yymm}/${theDate}
+
+# begin hpss extraction
+mkdir -p $workdir
+cd ${workdir}
+
+for cyc in ${cycles}; do
+  echo 'processing' $cyc
+  hpss_tar=${hpssdir}/com_gfs_v16.3_gfs.${theDate}_${cyc}.gfswave_output.tar
+  hpss_files=$( $hpsstar inx $hpss_tar | grep global.0p25 | grep -v idx )
+  $hpsstar getnostage $hpss_tar $hpss_files
+  
+done
+
+echo "get_hpss_archive finished on `date`"
+
+#cd ${workdir}/gfs.${theDate}/${cyc}/wave/gridded/
+if [[ "${copy_files}" = 'yes' ]];then
+ cp ${workdir}/gfs.${theDate}/${cyc}/wave/gridded/*.grib2 ${workdir}/${theDate}
+fi
+
+cd ${workdir}/${theDate}
+#exit
+
+#while (( $theDate <= $endDate )); do
+#  echo "running get_hpss_prod for ${theDate}"
+#  yy=$(date --date=$theDate "+%Y")
+#  yymm=$(date --date=$theDate "+%Y%m")
+# for cyc in $cycles; do
+#    echo 'processing' $cyc
+#        filedir=${theDate}/${cyc}
+#        #mkdir -p ${theDate}
+#        griddedDir=gfs.${filedir}/wave/gridded
+#        #stationDir=gfs.${filedir}/wave/station
+#        hpss_dir=/NCEPPROD/hpssprod/runhistory/rh${yy}/${yymm}/${theDate}
+#        hpss_file=${hpss_dir}/com_gfs_v16.3_gfs.${theDate}_${cyc}.gfswave_output.tar
+#        fcst=0
+#        while (( $fcst <= 23 )); do
+#          FCST=$(printf '%03d' $fcst)
+#          file=gfswave.t${cyc}z.global.0p25.f${FCST}.grib2
+#          $hpsstar getnostage $hpss_file ./$griddedDir/$file
+#          fcst=$(($fcst + 1))
+#        done
+# done
+# theDate=$(date --date="$theDate + 1 day" '+%Y%m%d')
+ 
+#fcst=0
+#FCST=$(printf '%03d' $fcst)
     if [[ "${prep_file}" = 'yes' ]]
 	then
       OK=0
-	  for file in multi_1.glo_30m.t*${cyc}z.*.grib2; do
-        $WGRIB2 $file -s | egrep '(:UGRD:|:VGRD:|:HTSGW:|:PERPW:|:DIRPW:)' | \
-		$WGRIB2 -i $file -append -grib cat${cyc}.grib2 1> /dev/null
-		if (( $? != 0 )); then
-          OK=$?
-		checkpoint $OK WGRIB2-${file}
-        fi
-      done
-	  checkpoint $OK WGRIB2 >> jcomm_checks.log
-	  
+	  #for file in multi_1.glo_30m.t*${cyc}z.*.grib2; do
+	 # for file in gfswave.t${cyc}z.global.0p25.f${FCST}.grib2; do
+           for file in gfswave.t${cyc}z.global.0p25.f*.grib2; do	
+             #wgrib2 -s | egrep '(:UGRD:|:VGRD:|:HTSGW:|:PERPW:|:DIRPW:)' | \
+	     #-append -grib cat${cyc}.grib2 1> /dev/null
+             wgrib2 $file -s | egrep '(:UGRD:|:VGRD:|:HTSGW:|:PERPW:|:DIRPW:)' | wgrib2 -i $file -append -grib cat${cyc}.grib2
+	
+	   if (( $? != 0 )); then
+            OK=$?
+            checkpoint $OK GRIB_FILTER-${file}
+           fi
+          done
+	  checkpoint $OK GRIB_FILTER >> jcomm_checks.log
+
+	#  if [[ -a ${workdir}/${theDate}/cat${cyc}.grib2 ]]; then
 	  # remove the individual grib2 files
-	  rm -f ${workdir}/${theDate}/multi_1.glo_30m.t${cyc}z.*.grib2
-	  
+#	  rm -f ${workdir}/${theDate}/multi_1.glo_30m.t${cyc}z.*.grib2
+	  rm -f ${workdir}/${thedate}/gfswave.t${cyc}z.global.0p25.f${FCST}.grib2
 	  # change the shortName for each variable:
 	  echo "grib_filter -o out${cyc}.grib2 rule.filter cat${cyc}.grib2"
-	  $ECCODES_UTIL/grib_filter -o out${cyc}.grib2 rule.filter cat${cyc}.grib2
+
+	  grib_filter -o out${cyc}.grib2 rule.filter cat${cyc}.grib2
 	  checkpoint $? GRIB_FILTER >> jcomm_checks.log
 	  
-      module unload eccodes/2.17.0
-      module load python/3.6.3
-      export PYTHONPATH=/gpfs/dell2/emc/modeling/noscrub/gwv/py/lib/python:/usrx/local/nceplibs/dev/lib/pygrib/lib/python3.6/site-packages/
+#      module unload eccodes/2.17.0
+#      module load python/3.6.3
+#      export PYTHONPATH=/gpfs/dell2/emc/modeling/noscrub/gwv/py/lib/python:/usrx/local/nceplibs/dev/lib/pygrib/lib/python3.6/site-packages/
 
       # fix the primary wave period range and create data_range.txt
 	  echo "***     ***" >> all_range.txt
-	  echo "python fix_pwper.py out${cyc}.grib2"
-	  python fix_pwper.py out${cyc}.grib2
+	  echo "python fix_ranges.py out${cyc}.grib2"
+	  python fix_ranges.py out${cyc}.grib2
 	  cat data_range.txt >> all_range.txt
 	  echo "***     ***" >> all_range.txt
-	  checkpoint $? FIX_PWPER >> jcomm_checks.log
+	  checkpoint $? FIX_RANGES >> jcomm_checks.log
 	        
-      module unload python/3.6.3
-      module use -a /gpfs/dell1/usrx/local/nceplibs/dev/modulefiles
-      module load eccodes/2.17.0
+ #     module unload python/3.6.3
+ #     module use -a /gpfs/dell1/usrx/local/nceplibs/dev/modulefiles
+ #     module load eccodes/2.17.0
 
       # change the compression to simple (from jpeg2000)
 	  echo "grib_set -r -s packingType=grid_simple out${cyc}.grib2 wave_NCEP_${theDate}${cyc}_prod_fc.grib2"
-	  $ECCODES_UTIL/grib_set -r -s packingType=grid_simple out${cyc}.grib2.fix wave_NCEP_${theDate}${cyc}_prod_fc.grib2
+	  grib_set -r -s packingType=grid_simple out${cyc}.grib2.fix wave_NCEP_${theDate}${cyc}_prod_fc.grib2
 	  checkpoint $? GRIB_SET >> jcomm_checks.log
 	  
 	  # create MD5 check sum for wave_NCEP_${theDate}${cyc}_prod_fc.grib
 	  echo "creating MD5 check sum for wave_NCEP_${theDate}${cyc}_prod_fc.grib2"
-	  /usr/bin/md5sum wave_NCEP_${theDate}${cyc}_prod_fc.grib2 > wave_NCEP_${theDate}${cyc}_prod_fc.grib2.MD5
-	  checkpoint $? WCOSS_MD5 >> jcomm_checks.log
-	  
+	  md5sum wave_NCEP_${theDate}${cyc}_prod_fc.grib2 > wave_NCEP_${theDate}${cyc}_prod_fc.grib2.MD5
+	  checkpoint $? MD5 >> jcomm_checks.log
+   #   fi # cat	  
     fi # prep_file
-
+ 
     if [[ "${qc_file}" = 'yes' ]]
 	then
       # check number of messages
-	  num_messages=`$ECCODES_UTIL/grib_count wave_NCEP_${theDate}${cyc}_prod_fc.grib2`
+	  num_messages=`grib_count wave_NCEP_${theDate}${cyc}_prod_fc.grib2`
 	  OK=$?
 	  checkpoint $OK NUM_MESS >> jcomm_checks.log
 	  if [ "${num_messages}" != 705 ]
@@ -159,7 +247,7 @@ if [ $runcron -eq 1 ]; then
       fi # number of messages
 	  
 	  # check list of variables
-	  $ECCODES_UTIL/grib_ls -pparamId -wstep=0 wave_NCEP_${theDate}${cyc}_prod_fc.grib2 | head -n -3 | tail -n +3 | awk '{print $1}' > paramIDs${theDate}${cyc}.txt
+	  grib_ls -pparamId -wstep=0 wave_NCEP_${theDate}${cyc}_prod_fc.grib2 | head -n -3 | tail -n +3 | awk '{print $1}' > paramIDs${theDate}${cyc}.txt
 	  #sed -i -e '1,2d;$d' paramIDs${theDate}${cyc}.txt  # remove the first 2 and last line
 	  #sed -i -e '$d' paramIDs${theDate}${cyc}.txt       # remove blank line
 	  #sed -i -e '$d' paramIDs${theDate}${cyc}.txt       # keep only paramIDs
@@ -262,7 +350,7 @@ if [ $runcron -eq 1 ]; then
 	echo "DONE_${cyc}" >> jcomm_checks.log
 	echo "***     ***" >> jcomm_checks.log
 	
-  done
+  #done
   
   if [[ "${check_ftp}" = 'yes' ]]
   then
@@ -285,5 +373,5 @@ if [ $runcron -eq 1 ]; then
     rm -rf ${workdir}/${theDate}
   fi
   
-fi  ## on DEV
+#fi  ## on DEV
 exit

@@ -84,7 +84,7 @@ do
       checkpoint $? WCOSS_MD5 >> jcomm_checks.log
     
     else
-      echo "files not pushed from devwcoss" >> jcomm_checks.log
+      echo "files not pushed from Hera" >> jcomm_checks.log
       echo "exiting now" >> jcomm_checks.log
       exit
     fi
